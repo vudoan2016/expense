@@ -1,5 +1,11 @@
+import 'package:calendar/transaction.dart';
+import 'package:calendar/summary.dart';
 import 'package:flutter/material.dart';
-import 'package:expense/calendar.dart';
+import 'package:calendar/new_transaction.dart';
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart'
+    show CalendarCarousel;
+import 'package:flutter_calendar_carousel/classes/event_list.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 void main() => runApp(new MyApp());
 
@@ -7,7 +13,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return new MaterialApp(
       title: 'expense calendar',
       theme: new ThemeData(
         // This is the theme of your application.
@@ -20,7 +26,210 @@ class MyApp extends StatelessWidget {
         // counter didn't reset back to zero; the application is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: Calendar(),
+      home: new MyHomePage(homepageTitle: 'Homepage'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key? key, required this.homepageTitle}) : super(key: key);
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String homepageTitle;
+
+  @override
+  _MyHomePageState createState() => new _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  DateTime _currentDate = DateTime.now();
+  DateTime _targetDateTime = DateTime.now();
+
+  EventList<Transaction> _markedDateMap = new EventList<Transaction>(
+    events: {},
+  );
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  addTransactionDialog(DateTime date) async {
+    Transaction transaction = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            NewTransactionScreen(title: DateFormat.yMMM().format(date)),
+        settings: RouteSettings(
+          arguments: date,
+        ),
+      ),
+    );
+    _markedDateMap.add(date, transaction);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    /// Example Calendar Carousel without header and custom prev & next button
+    final _calendarCarouselNoHeader = CalendarCarousel<Transaction>(
+      todayBorderColor: Colors.green,
+      onDayPressed: (date, transactions) {
+        setState(() => _currentDate = date);
+      },
+      daysHaveCircularBorder: true,
+      showOnlyCurrentMonthDate: false,
+      weekendTextStyle: TextStyle(
+        color: Colors.red,
+      ),
+      thisMonthDayBorderColor: Colors.grey,
+      weekFormat: false,
+      markedDatesMap: _markedDateMap,
+      height: 420.0,
+      selectedDateTime: _currentDate,
+      targetDateTime: _targetDateTime,
+      customGridViewPhysics: NeverScrollableScrollPhysics(),
+      markedDateCustomShapeBorder:
+          CircleBorder(side: BorderSide(color: Colors.yellow)),
+      markedDateCustomTextStyle: TextStyle(
+        fontSize: 18,
+        color: Colors.blue,
+      ),
+      showHeader: false,
+      todayTextStyle: TextStyle(
+        color: Colors.blue,
+      ),
+      todayButtonColor: Colors.yellow,
+      selectedDayTextStyle: TextStyle(
+        color: Colors.yellow,
+      ),
+      minSelectedDate: _currentDate.subtract(Duration(days: 360)),
+      maxSelectedDate: _currentDate.add(Duration(days: 360)),
+      prevDaysTextStyle: TextStyle(
+        fontSize: 16,
+        color: Colors.pinkAccent,
+      ),
+      inactiveDaysTextStyle: TextStyle(
+        color: Colors.tealAccent,
+        fontSize: 16,
+      ),
+      onCalendarChanged: (DateTime date) {
+        this.setState(() {
+          _targetDateTime = date;
+        });
+      },
+      onDayLongPressed: (DateTime date) {
+        setState(() => addTransactionDialog(date));
+      },
+    );
+
+    return new Scaffold(
+      appBar: null, // no appBar
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(
+                top: 30.0,
+                bottom: 16.0,
+                left: 16.0,
+                right: 16.0,
+              ),
+              child: new Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextButton(
+                    child: Text(
+                      '<',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() => _targetDateTime = DateTime(
+                          _targetDateTime.year, _targetDateTime.month - 1));
+                    },
+                  ),
+                  TextButton(
+                    child: Text(
+                      DateFormat.MMM().format(_targetDateTime),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExpenseSummaryScreen(
+                              title: DateFormat.yMMM().format(_targetDateTime)),
+                          settings: RouteSettings(
+                            arguments: new ScreenArguments(_markedDateMap,
+                                _targetDateTime.month, _targetDateTime.year),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  TextButton(
+                    child: Text(
+                      DateFormat.y().format(_targetDateTime),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExpenseSummaryScreen(
+                              title: DateFormat.y().format(_targetDateTime)),
+                          settings: RouteSettings(
+                            arguments: new ScreenArguments(
+                              _markedDateMap,
+                              0,
+                              _targetDateTime.year,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  TextButton(
+                    child: Text(
+                      '>',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() => _targetDateTime = DateTime(
+                          _targetDateTime.year, _targetDateTime.month + 1));
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.0),
+              child: _calendarCarouselNoHeader,
+            ), //
+          ],
+        ),
+      ),
     );
   }
 }
