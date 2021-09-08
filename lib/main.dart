@@ -1,11 +1,11 @@
-import 'package:calendar/transaction.dart';
-import 'package:calendar/summary.dart';
 import 'package:flutter/material.dart';
-import 'package:calendar/new_transaction.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart'
     show CalendarCarousel;
 import 'package:flutter_calendar_carousel/classes/event_list.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:expense/transaction.dart';
+import 'package:expense/summary.dart';
+import 'package:expense/new_transaction.dart';
 
 void main() => runApp(new MyApp());
 
@@ -50,6 +50,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  double cHeight = 0;
   DateTime _currentDate = DateTime.now();
   DateTime _targetDateTime = DateTime.now();
 
@@ -62,22 +63,26 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  addTransactionDialog(DateTime date) async {
-    Transaction transaction = await Navigator.push(
+  Future<void> addTransactionDialog(DateTime date) async {
+    final transaction = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
-            NewTransactionScreen(title: DateFormat.yMMM().format(date)),
+            NewTransactionScreen(title: DateFormat.yMMMd().format(date)),
         settings: RouteSettings(
           arguments: date,
         ),
       ),
     );
-    _markedDateMap.add(date, transaction);
+    if (transaction != null) {
+      _markedDateMap.add(date, transaction);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    cHeight = MediaQuery.of(context).size.height;
+
     /// Example Calendar Carousel without header and custom prev & next button
     final _calendarCarouselNoHeader = CalendarCarousel<Transaction>(
       todayBorderColor: Colors.green,
@@ -131,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     return new Scaffold(
-      appBar: null, // no appBar
+      appBar: null, // hide appBar
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,19 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   TextButton(
-                    child: Text(
-                      '<',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24.0,
-                      ),
-                    ),
-                    onPressed: () {
-                      setState(() => _targetDateTime = DateTime(
-                          _targetDateTime.year, _targetDateTime.month - 1));
-                    },
-                  ),
-                  TextButton(
+                    // when click bring up monthly summary
                     child: Text(
                       DateFormat.MMM().format(_targetDateTime),
                       style: TextStyle(
@@ -183,6 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   TextButton(
+                    // when click bring up yearly summary
                     child: Text(
                       DateFormat.y().format(_targetDateTime),
                       style: TextStyle(
@@ -205,19 +199,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       );
-                    },
-                  ),
-                  TextButton(
-                    child: Text(
-                      '>',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24.0,
-                      ),
-                    ),
-                    onPressed: () {
-                      setState(() => _targetDateTime = DateTime(
-                          _targetDateTime.year, _targetDateTime.month + 1));
                     },
                   ),
                 ],

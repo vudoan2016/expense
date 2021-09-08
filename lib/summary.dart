@@ -1,4 +1,4 @@
-import 'package:calendar/transaction.dart';
+import 'package:expense/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/classes/event_list.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -23,6 +23,11 @@ DataTable createDataTable(transactions) {
     ],
     rows: transactions
         .map((t) => DataRow(
+              /*
+              onSelectChanged: (newValue) {
+                print('row 1 pressed ${t.index}');
+              },
+              */
               cells: <DataCell>[
                 DataCell(Text(DateFormat.yMMMd().format(t.date))),
                 DataCell(Text(t.title)),
