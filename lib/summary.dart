@@ -1,14 +1,20 @@
 import 'package:expense/transaction.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/classes/event_list.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'dart:collection';
 
 class ScreenArguments {
   final int month;
   final int year;
-  final EventList<Transaction> markedDateMap;
+  LinkedHashMap<DateTime, List<Transaction>> transactions;
 
-  ScreenArguments(this.markedDateMap, this.month, this.year);
+  ScreenArguments(this.transactions, this.month, this.year);
+}
+
+class TransactionInDay {
+  final DateTime date;
+  final Transaction trans;
+  TransactionInDay(this.date, this.trans);
 }
 
 DataTable createDataTable(transactions) {
@@ -30,9 +36,9 @@ DataTable createDataTable(transactions) {
               */
               cells: <DataCell>[
                 DataCell(Text(DateFormat.yMMMd().format(t.date))),
-                DataCell(Text(t.title)),
-                DataCell(Text(t.merchant)),
-                DataCell(Text(t.amount.toStringAsFixed(2))),
+                DataCell(Text(t.trans.category)),
+                DataCell(Text(t.trans.vendor)),
+                DataCell(Text(t.trans.amount.toStringAsFixed(2))),
               ],
             ))
         .toList()
@@ -52,15 +58,15 @@ class ExpenseSummaryScreen extends StatelessWidget {
     var transactions = [];
     num sum = 0;
 
-    args.markedDateMap.events.entries.forEach(
-      (e) => {
-        if ((args.month == 0 || e.key.month == args.month) &&
-            e.key.year == args.year)
-          {transactions.addAll(e.value)}
-      },
-    );
+    args.transactions.entries.forEach((e) => {
+          if ((args.month == 0 || e.key.month == args.month) &&
+              e.key.year == args.year)
+            e.value.forEach((element) {
+              transactions.add(TransactionInDay(e.key, element));
+            })
+        });
 
-    transactions.forEach((e) => sum += e.amount);
+    transactions.forEach((e) => sum += e.trans.amount);
 
     return Scaffold(
       appBar: AppBar(

@@ -1,15 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/classes/event.dart';
+int getHashCode(DateTime key) {
+  return key.day * 1000000 + key.month * 10000 + key.year;
+}
 
-class Transaction extends Event {
-  final String merchant;
+/// Returns a list of [DateTime] objects from [first] to [last], inclusive.
+List<DateTime> daysInRange(DateTime first, DateTime last) {
+  final dayCount = last.difference(first).inDays + 1;
+  return List.generate(
+    dayCount,
+    (index) => DateTime.utc(first.year, first.month, first.day + index),
+  );
+}
+
+class Transaction {
+  final String category;
+  final String vendor;
   final double amount;
-  final String receiptImgPath;
 
-  Transaction(DateTime date, String title, Widget icon, Widget dot,
-      String merchant, double amount, String receiptImgPath)
-      : merchant = merchant,
-        amount = amount,
-        receiptImgPath = receiptImgPath,
-        super(date: date, title: title, icon: icon, dot: dot);
+  const Transaction(this.category, this.vendor, this.amount);
+
+  @override
+  String toString() => category + vendor + amount.toString();
 }

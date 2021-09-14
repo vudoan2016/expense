@@ -3,17 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:expense/transaction.dart';
 import 'package:expense/receipt.dart';
 import 'package:camera/camera.dart';
-
-Widget _eventIcon = new Container(
-  decoration: new BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.all(Radius.circular(1000)),
-      border: Border.all(color: Colors.blue, width: 2.0)),
-  child: new Icon(
-    Icons.person,
-    color: Colors.amber,
-  ),
-);
+import 'package:google_ml_vision/google_ml_vision.dart';
 
 class NewTransactionScreen extends StatefulWidget {
   NewTransactionScreen({Key? key, required this.title}) : super(key: key);
@@ -32,13 +22,37 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
   double budget = 0;
   late TextEditingController _amtController, _descController;
   String _category = '', _merchant = '';
-  String receiptImgPath = '';
+  String _receiptImgPath = '';
 
   @override
   void initState() {
     super.initState();
     _amtController = TextEditingController();
     _descController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    // Disposing the text detector when not used anymore
+    super.dispose();
+  }
+
+  Future<void> recogniseText() async {
+    final GoogleVisionImage visionImage =
+        GoogleVisionImage.fromFile(File(_receiptImgPath));
+    final TextRecognizer textRecognizer =
+        GoogleVision.instance.textRecognizer();
+    final VisionText visionText =
+        await textRecognizer.processImage(visionImage);
+
+    for (TextBlock block in visionText.blocks) {
+      for (TextLine line in block.lines) {
+        // Same getters as TextBlock
+        for (TextElement element in line.elements) {
+          print(element.text);
+        }
+      }
+    }
   }
 
   Future<void> addReceipt(BuildContext context) async {
@@ -60,14 +74,13 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
     );
 
     if (path != null) {
-      setState(() => receiptImgPath = path);
+      setState(() => _receiptImgPath = path);
+      recogniseText();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final date = ModalRoute.of(context)!.settings.arguments as DateTime;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
@@ -176,7 +189,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
               padding: EdgeInsets.zero,
               height: 150,
               width: 150,
-              child: Image.file(File(receiptImgPath)),
+              child: Image.file(File(_receiptImgPath)),
             ),
           ],
         ),
@@ -188,18 +201,9 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
           onPressed: () {
             if (_category != '' && _amtController.text != '') {
               Transaction t = new Transaction(
-                date,
                 _category,
-                _eventIcon,
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 1.0),
-                  color: Colors.red,
-                  height: 5.0,
-                  width: 5.0,
-                ),
                 _merchant,
                 double.parse(_amtController.text),
-                receiptImgPath,
               );
               _amtController.clear();
               Navigator.pop(context, t); // return the newly create transaction
