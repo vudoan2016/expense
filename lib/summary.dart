@@ -2,6 +2,7 @@ import 'package:expense/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'dart:collection';
+import 'package:pie_chart/pie_chart.dart';
 
 class ScreenArguments {
   final int month;
@@ -11,10 +12,10 @@ class ScreenArguments {
   ScreenArguments(this.transactions, this.month, this.year);
 }
 
-class TransactionInDay {
+class DailyTransaction {
   final DateTime date;
   final Transaction trans;
-  TransactionInDay(this.date, this.trans);
+  DailyTransaction(this.date, this.trans);
 }
 
 DataTable createDataTable(transactions) {
@@ -29,11 +30,6 @@ DataTable createDataTable(transactions) {
     ],
     rows: transactions
         .map((t) => DataRow(
-              /*
-              onSelectChanged: (newValue) {
-                print('row 1 pressed ${t.index}');
-              },
-              */
               cells: <DataCell>[
                 DataCell(Text(DateFormat.yMMMd().format(t.date))),
                 DataCell(Text(t.trans.category)),
@@ -51,6 +47,7 @@ class ExpenseSummaryScreen extends StatelessWidget {
 
   final String title;
   final double budget = 0;
+  final Map<String, double> categoryChart = Map();
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +59,15 @@ class ExpenseSummaryScreen extends StatelessWidget {
           if ((args.month == 0 || e.key.month == args.month) &&
               e.key.year == args.year)
             e.value.forEach((element) {
-              transactions.add(TransactionInDay(e.key, element));
+              transactions.add(DailyTransaction(e.key, element));
             })
         });
 
-    transactions.forEach((e) => sum += e.trans.amount);
+    transactions.forEach((e) {
+      categoryChart[e.trans.category] =
+          (categoryChart[e.trans.category] ?? 0) + e.trans.amount;
+      sum += e.trans.amount;
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -76,12 +77,21 @@ class ExpenseSummaryScreen extends StatelessWidget {
         child: ListView(
           scrollDirection: Axis.vertical,
           children: <Widget>[
-            new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  Text('Expense: $sum'),
-                  Text('Budget: $budget'),
-                ]),
+            Container(
+              margin: EdgeInsets.only(
+                top: 30.0,
+                bottom: 16.0,
+                left: 16.0,
+                right: 16.0,
+              ),
+              child: new Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Text('Expense: $sum'),
+                    Text('Budget: $budget'),
+                  ]),
+            ),
+            PieChart(dataMap: categoryChart),
             SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: createDataTable(transactions)),

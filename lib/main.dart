@@ -260,8 +260,16 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: ListTile(
-                        onTap: () => print('${value[index]}'),
-                        title: Text('${value[index]}'),
+                        onTap: null,
+                        title: Container(
+                            child: new Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                              Text('${value[index].category}'),
+                              Text('${value[index].vendor}'),
+                              Text('${value[index].amount.toString()}'),
+                            ])),
                       ),
                     );
                   },
