@@ -21,7 +21,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
   final String title;
   double budget = 0;
   late TextEditingController _amtController, _descController;
-  String _category = '', _merchant = '';
+  String _category = '', _vendor = '', _repeat = '';
   String _receiptImgPath = '';
 
   @override
@@ -117,8 +117,8 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                     hint: Text('Category'),
                   ),
                   DropdownButton<String>(
-                    // Merchant dropdown
-                    value: _merchant,
+                    // Vendor dropdown
+                    value: _vendor,
                     style: TextStyle(color: Colors.black),
                     items: <String>[
                       'Walmart',
@@ -132,9 +132,9 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                       );
                     }).toList(),
                     onChanged: (String? value) {
-                      setState(() => _merchant = value!);
+                      setState(() => _vendor = value!);
                     },
-                    hint: Text('Merchant'),
+                    hint: Text('Vendor'),
                   ),
                 ],
               ),
@@ -153,6 +153,25 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                           decimal: true, signed: false),
                       controller: _amtController,
                     ),
+                  ),
+                  DropdownButton<String>(
+                    // Repeat dropdown
+                    value: _repeat,
+                    style: TextStyle(color: Colors.black),
+                    items: <String>[
+                      'Monthly',
+                      'Seme annually',
+                      'Annually',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      setState(() => _repeat = value!);
+                    },
+                    icon: const Icon(Icons.repeat),
                   ),
                 ],
               ),
@@ -202,7 +221,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
             if (_category != '' && _amtController.text != '') {
               Transaction t = new Transaction(
                 _category,
-                _merchant,
+                _vendor,
                 double.parse(_amtController.text),
               );
               _amtController.clear();

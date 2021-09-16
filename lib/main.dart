@@ -149,7 +149,7 @@ class _HomePageState extends State<HomePage> {
       child: new Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          TextButton(
+          ElevatedButton(
             // when click bring up monthly summary
             child: Text(
               DateFormat.MMM().format(_focusedDay),
@@ -157,6 +157,12 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.bold,
                 fontSize: 24.0,
               ),
+            ),
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color: Colors.blue))),
             ),
             onPressed: () {
               Navigator.push(
@@ -172,7 +178,7 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-          TextButton(
+          ElevatedButton(
             // when click bring up yearly summary
             child: Text(
               DateFormat.y().format(_focusedDay),
@@ -180,6 +186,12 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.bold,
                 fontSize: 24.0,
               ),
+            ),
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                      side: BorderSide(color: Colors.blue))),
             ),
             onPressed: () {
               Navigator.push(
