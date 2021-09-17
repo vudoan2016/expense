@@ -15,8 +15,14 @@ class Transaction {
   final String category;
   final String vendor;
   final double amount;
+  final String frequency;
 
-  const Transaction(this.category, this.vendor, this.amount);
+  const Transaction.empty()
+      : this.category = '',
+        this.vendor = '',
+        this.amount = 0,
+        this.frequency = '';
+  const Transaction(this.category, this.vendor, this.amount, this.frequency);
 
   @override
   String toString() => category + vendor + amount.toString();

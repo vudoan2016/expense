@@ -77,26 +77,40 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
-  Future<void> _addTransactionDialog(DateTime date) async {
+  Future<void> _processTransactionRequest(
+      DateTime date, Transaction old) async {
     final transaction = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
             NewTransactionScreen(title: DateFormat.yMMMd().format(date)),
         settings: RouteSettings(
-          arguments: date,
+          arguments: old,
         ),
       ),
     );
     if (transaction != null) {
+      final beginningOfNextYear = DateTime(date.year + 1, 1, 1);
+      DateTime nextDate = date;
       setState(() {
-        final todayTransactions = allTransactions[date];
-        if (todayTransactions == null) {
-          allTransactions[date] = [transaction];
-        } else {
-          todayTransactions.add(transaction);
+        while (nextDate.isBefore(beginningOfNextYear)) {
+          final transactionsOfDay = allTransactions[nextDate];
+          if (transactionsOfDay == null) {
+            allTransactions[nextDate] = [transaction];
+          } else {
+            transactionsOfDay.add(transaction);
+          }
+          _selectedEvents.value = _getEventsForDay(nextDate);
+          if (transaction.frequency == 'Monthly') {
+            nextDate =
+                DateTime(nextDate.year, nextDate.month + 1, nextDate.day);
+          } else if (transaction.frequency == 'Semi annually') {
+            nextDate =
+                DateTime(nextDate.year, nextDate.month + 6, nextDate.day);
+          } else {
+            break;
+          }
         }
-        _selectedEvents.value = _getEventsForDay(date);
       });
     }
   }
@@ -115,7 +129,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onDayLongPressedCb(DateTime selectedDay, DateTime focusedDay) {
-    _addTransactionDialog(selectedDay);
+    _processTransactionRequest(selectedDay, Transaction.empty());
   }
 
   void _onRangeSelectedCb(DateTime? start, DateTime? end, DateTime focusedDay) {
@@ -155,7 +169,7 @@ class _HomePageState extends State<HomePage> {
               DateFormat.MMM().format(_focusedDay),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 24.0,
+                fontSize: 16.0,
               ),
             ),
             style: ButtonStyle(
@@ -184,7 +198,7 @@ class _HomePageState extends State<HomePage> {
               DateFormat.y().format(_focusedDay),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 24.0,
+                fontSize: 16.0,
               ),
             ),
             style: ButtonStyle(
@@ -272,7 +286,13 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: ListTile(
-                        onTap: null,
+                        onTap: () => _processTransactionRequest(
+                            _selectedDay!,
+                            Transaction(
+                                value[index].category,
+                                value[index].vendor,
+                                value[index].amount,
+                                value[index].frequency)),
                         title: Container(
                             child: new Row(
                                 mainAxisAlignment:
