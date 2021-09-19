@@ -28,16 +28,19 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
     'HoA'
   ];
   final vendors = ['Walmart', 'Trader Joe\'s', 'Ocean', 'Costco'];
+  final frequency = ['Monthly', 'Semi anuually'];
   final String title;
   double budget = 0;
-  late TextEditingController _amtController, _descController;
+  late TextEditingController _descController;
   String _category = '', _vendor = '', _frequency = '';
   String _receiptImgPath = '';
 
   @override
   void initState() {
+    _category = categories[0];
+    _vendor = vendors[0];
+    _frequency = frequency[0];
     super.initState();
-    _amtController = TextEditingController();
     _descController = TextEditingController();
   }
 
@@ -89,9 +92,26 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
     }
   }
 
+  Widget showReceipt() {
+    return File(_receiptImgPath).existsSync()
+        ? Container(
+            // display the receipt image
+            padding: EdgeInsets.zero,
+            height: 150,
+            width: 150,
+            child: Image.file(File(_receiptImgPath)),
+          )
+        : Container();
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Transaction;
+    String _amount = args.amount.toString();
+    if (args.category.isNotEmpty) _category = args.category;
+    if (args.vendor.isNotEmpty) _vendor = args.vendor;
+    if (args.frequency.isNotEmpty) _frequency = args.frequency;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
@@ -106,7 +126,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                 children: <Widget>[
                   DropdownButton<String>(
                     // Category dropdown
-                    value: args.category,
+                    value: _category,
                     style: TextStyle(color: Colors.black),
                     items: categories
                         .map<DropdownMenuItem<String>>((String value) {
@@ -122,7 +142,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                   ),
                   DropdownButton<String>(
                     // Vendor dropdown
-                    value: args.vendor,
+                    value: _vendor,
                     style: TextStyle(color: Colors.black),
                     items:
                         vendors.map<DropdownMenuItem<String>>((String value) {
@@ -143,7 +163,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
               child: new Row(
                 children: <Widget>[
                   new Flexible(
-                    child: new TextFormField(
+                    child: new TextField(
                       // Amount text
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -151,18 +171,17 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                       ),
                       keyboardType: TextInputType.numberWithOptions(
                           decimal: true, signed: false),
-                      initialValue: args.amount.toString(),
-                      controller: _amtController,
+                      onChanged: (amt) {
+                        _amount = amt;
+                      },
                     ),
                   ),
                   DropdownButton<String>(
                     // Repeat dropdown
-                    value: args.frequency,
+                    value: _frequency,
                     style: TextStyle(color: Colors.black),
-                    items: <String>[
-                      'Monthly',
-                      'Semi annually',
-                    ].map<DropdownMenuItem<String>>((String value) {
+                    items:
+                        frequency.map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -203,16 +222,10 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                 ],
               ),
             ),
-            Container(
-              // display the receipt image
-              padding: EdgeInsets.zero,
-              height: 150,
-              width: 150,
-              child: Image.file(File(_receiptImgPath)),
-            ),
+            showReceipt(),
             Container(
               child: new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Visibility(
                       child: ElevatedButton(
@@ -224,6 +237,8 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                             ),
                           ),
                           style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.red),
                             shape: MaterialStateProperty.all<
                                     RoundedRectangleBorder>(
                                 RoundedRectangleBorder(
@@ -248,14 +263,13 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
             elevation: 0.0,
             backgroundColor: new Color(0xFFE57373),
             onPressed: () {
-              if (_category != '' && _amtController.text != '') {
+              if (_category != '' && _amount != '') {
                 Transaction t = new Transaction(
                   _category,
                   _vendor,
-                  double.parse(_amtController.text),
+                  double.parse(_amount),
                   _frequency,
                 );
-                _amtController.clear();
                 Navigator.pop(
                     context, t); // return the newly create transaction
               }

@@ -20,7 +20,7 @@ class Transaction {
   const Transaction.empty()
       : this.category = '',
         this.vendor = '',
-        this.amount = 0,
+        this.amount = 0.0,
         this.frequency = '';
   const Transaction(this.category, this.vendor, this.amount, this.frequency);
 
