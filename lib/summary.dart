@@ -18,30 +18,6 @@ class DailyTransaction {
   DailyTransaction(this.date, this.trans);
 }
 
-DataTable createDataTable(transactions) {
-  return DataTable(
-    headingRowHeight: 0,
-    dividerThickness: 0,
-    columns: <DataColumn>[
-      DataColumn(label: Text('')),
-      DataColumn(label: Text('')),
-      DataColumn(label: Text('')),
-      DataColumn(label: Text(''))
-    ],
-    rows: transactions
-        .map((t) => DataRow(
-              cells: <DataCell>[
-                DataCell(Text(DateFormat.yMMMd().format(t.date))),
-                DataCell(Text(t.trans.category)),
-                DataCell(Text(t.trans.vendor)),
-                DataCell(Text(t.trans.amount.toStringAsFixed(2))),
-              ],
-            ))
-        .toList()
-        .cast<DataRow>(),
-  );
-}
-
 class ExpenseSummaryScreen extends StatelessWidget {
   ExpenseSummaryScreen({Key? key, required this.title}) : super(key: key);
 
@@ -74,30 +50,81 @@ class ExpenseSummaryScreen extends StatelessWidget {
         title: Text(title),
       ),
       body: Center(
-        child: ListView(
-          scrollDirection: Axis.vertical,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(
-                top: 30.0,
-                bottom: 16.0,
-                left: 16.0,
-                right: 16.0,
-              ),
-              child: new Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text('Expense: $sum'),
-                    Text('Budget: $budget'),
-                  ]),
+        child: Column(children: [
+          Container(
+            margin: EdgeInsets.only(
+              top: 30.0,
+              bottom: 16.0,
+              left: 16.0,
+              right: 16.0,
             ),
-            PieChart(dataMap: categoryChart),
-            SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: createDataTable(transactions)),
-          ],
-        ),
+            child: new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Text('Expense: $sum'),
+                  Text('Budget: $budget'),
+                ]),
+          ),
+          PieChart(dataMap: categoryChart),
+          Container(
+            child: new Flexible(
+              child: ListView.builder(
+                itemCount: transactions.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 4.0,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: ListTile(
+                      onTap: null,
+                      title: Container(
+                        child: new Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text('${transactions[index].trans.category}'),
+                            Text('${transactions[index].trans.vendor}'),
+                            Text(
+                                '${transactions[index].trans.amount.toString()}'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }
 }
+
+// DataTable createDataTable(transactions) {
+//   return DataTable(
+//     headingRowHeight: 0,
+//     dividerThickness: 0,
+//     columns: <DataColumn>[
+//       DataColumn(label: Text('')),
+//       DataColumn(label: Text('')),
+//       DataColumn(label: Text('')),
+//       DataColumn(label: Text(''))
+//     ],
+//     rows: transactions
+//         .map((t) => DataRow(
+//               cells: <DataCell>[
+//                 DataCell(Text(DateFormat.yMMMd().format(t.date))),
+//                 DataCell(Text(t.trans.category)),
+//                 DataCell(Text(t.trans.vendor)),
+//                 DataCell(Text(t.trans.amount.toStringAsFixed(2))),
+//               ],
+//             ))
+//         .toList()
+//         .cast<DataRow>(),
+//   );
+// }

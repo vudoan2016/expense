@@ -28,7 +28,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
     'HoA'
   ];
   final vendors = ['Walmart', 'Trader Joe\'s', 'Ocean', 'Costco'];
-  final frequency = ['Monthly', 'Semi anuually'];
+  final frequency = ['None', 'Monthly', 'Semi anuually'];
   final String title;
   double budget = 0;
   late TextEditingController _descController;
@@ -163,7 +163,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
               child: new Row(
                 children: <Widget>[
                   new Flexible(
-                    child: new TextField(
+                    child: new TextFormField(
                       // Amount text
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -174,6 +174,7 @@ class _NewTransactionScreenState extends State<NewTransactionScreen> {
                       onChanged: (amt) {
                         _amount = amt;
                       },
+                      //initialValue: _amount,
                     ),
                   ),
                   DropdownButton<String>(

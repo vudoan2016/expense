@@ -93,22 +93,27 @@ class _HomePageState extends State<HomePage> {
       final beginningOfNextYear = DateTime(date.year + 1, 1, 1);
       DateTime nextDate = date;
       setState(() {
-        while (nextDate.isBefore(beginningOfNextYear)) {
-          final transactionsOfDay = allTransactions[nextDate];
-          if (transactionsOfDay == null) {
-            allTransactions[nextDate] = [transaction];
-          } else {
-            transactionsOfDay.add(transaction);
-          }
-          _selectedEvents.value = _getEventsForDay(nextDate);
-          if (transaction.frequency == 'Monthly') {
-            nextDate =
-                DateTime(nextDate.year, nextDate.month + 1, nextDate.day);
-          } else if (transaction.frequency == 'Semi annually') {
-            nextDate =
-                DateTime(nextDate.year, nextDate.month + 6, nextDate.day);
-          } else {
-            break;
+        if (transaction.isEmpty()) {
+          // delete
+          allTransactions[date]?.remove(old);
+        } else {
+          while (nextDate.isBefore(beginningOfNextYear)) {
+            final transactionsOfDay = allTransactions[nextDate];
+            if (transactionsOfDay == null) {
+              allTransactions[nextDate] = [transaction];
+            } else {
+              transactionsOfDay.add(transaction);
+            }
+            _selectedEvents.value = _getEventsForDay(nextDate);
+            if (transaction.frequency == 'Monthly') {
+              nextDate =
+                  DateTime(nextDate.year, nextDate.month + 1, nextDate.day);
+            } else if (transaction.frequency == 'Semi annually') {
+              nextDate =
+                  DateTime(nextDate.year, nextDate.month + 6, nextDate.day);
+            } else {
+              break;
+            }
           }
         }
       });
@@ -287,12 +292,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: ListTile(
                         onTap: () => _processTransactionRequest(
-                            _selectedDay!,
-                            Transaction(
-                                value[index].category,
-                                value[index].vendor,
-                                value[index].amount,
-                                value[index].frequency)),
+                            _selectedDay!, value[index]),
                         title: Container(
                             child: new Row(
                                 mainAxisAlignment:

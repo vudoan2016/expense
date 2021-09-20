@@ -26,4 +26,7 @@ class Transaction {
 
   @override
   String toString() => category + vendor + amount.toString();
+
+  bool isEmpty() =>
+      this.category.isEmpty && this.vendor.isEmpty && this.amount == 0;
 }
